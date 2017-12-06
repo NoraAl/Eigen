@@ -1,5 +1,8 @@
 #include "__eigen.hpp"
 
+
+//cout << "This ->" << red << "word" << def << "<- is red." << endl;
+
 const String keys =
         "{help h usage ?    |   | print this message   }"
         "{load              |   | use the existing model in the data directory       }"
@@ -87,6 +90,11 @@ int main(int argc, const char *argv[]) {
     //      cv::createEigenFaceRecognizer(0, 123.0);
     //
     
+
+    
+    
+
+
     InputArray src = images;
     cout<< "elements: " << src.total()<< endl;
     cout<<"vector length: "<<src.getMat(0).total()<<endl;
@@ -109,20 +117,44 @@ int main(int argc, const char *argv[]) {
     
     /* predict 2*/
     int predictedLabel =  model->predict(testSample);
-    string result_message = format("Predicted class = %d / Actual class = %d.", predictedLabel, testLabel);
-    
+    string result_message = format("Predicted class = %d / Actual class = ", predictedLabel);
+    cout << result_message <<GREEN<<testLabel<< RESET <<endl;
     // /* predict 3*/
     // Ptr<StandardCollector> collector = StandardCollector::create(model->getThreshold());
     // model->predict(testSample, collector);
     // collector->getResults();
 
-    cout << result_message << endl;
     // Here is how to get the eigenvalues of this Eigenfaces model:
     Mat eigenvalues = model->getEigenValues();
     // And we can do the same to display the Eigenvectors (read Eigenfaces):
     Mat W = model->getEigenVectors();
     // Get the sample mean from the training data
     Mat mean = model->getMean();
+
+    /* fisher faces */
+    Ptr<FaceRecognizer> fmodel = FisherFaceRecognizer::create();
+    fmodel->train(images, labels);
+    // The following line predicts the label of a given
+    // test image:
+    predictedLabel = fmodel->predict(testSample);
+
+    //
+    // To get the confidence of a prediction call the model with:
+    //
+    //      int predictedLabel = -1;
+    //      double confidence = 0.0;
+    //      model->predict(testSample, predictedLabel, confidence);
+    //
+    result_message = format("Predicted class = %d / Actual class = ", predictedLabel);
+    cout << result_message <<GREEN<<testLabel<< RESET <<endl;
+    // Here is how to get the eigenvalues of this Eigenfaces model:
+    // Mat eigenvalues = fmodel->;
+    // // And we can do the same to display the Eigenvectors (read Eigenfaces):
+    // Mat W = fmodel->getEigenVectors();
+    // // Get the sample mean from the training data
+    // Mat mean = fmodel->getMat("mean");
+    /*-----------------------------*/
+
     return 0;
     // Display or save:
     if(outputFolder.empty()) {

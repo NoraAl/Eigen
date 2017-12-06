@@ -9,6 +9,7 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include "_framerec.hpp"
+#include "__colors.hpp"
 
 
 using namespace cv;
