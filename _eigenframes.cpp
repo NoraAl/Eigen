@@ -141,11 +141,13 @@ void Eigenframes::predict(InputArray _src, Ptr<PredictCollector> collector) cons
     // project into PCA subspace
     Mat q = LDA::subspaceProject(_eigenvectors, _mean, src.reshape(1, 1));
     collector->init(_projections.size());
+   std::cout << _projections.size()<<"---"<<std::endl;
     for (size_t sampleIdx = 0; sampleIdx < _projections.size(); sampleIdx++) {
         double dist = norm(_projections[sampleIdx], q, NORM_L2);
         int label = _labels.at<int>((int)sampleIdx);
-        if (!collector->collect(label, dist))return;
+        collector->collect(label, dist);
     }
+    std::cout <<"\ndone"<<std::endl;
 }
 
 Ptr<EigenFrameRecognizer> EigenFrameRecognizer::create(int num_components, double threshold)
