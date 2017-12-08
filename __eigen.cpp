@@ -1,6 +1,8 @@
 #include "__eigen.hpp"
 
 static void fisher(vector<Mat>& , vector<int>& , Mat& , int );
+static void mostFrequent( vector< pair<int, double> >&, int);
+
 
 int main(int argc, const char *argv[]) {
     CommandLineParser parser(argc, argv, keys);
@@ -64,32 +66,18 @@ int main(int argc, const char *argv[]) {
         cout << "Reading the model from file .."<<endl;
         model->read(modelFileName);
     }
-    cout << model->getThreshold()<<"<-----threshold"<<endl;
-   
-    /* predict 1*/
-    // int predictedLabel = -1;
-    // double confidence = 0.0;
-    // model->predict(testSample, predictedLabel, confidence);
-    // string result_message = format("Predicted class = %d / Actual class = %d, with confidence = %f.", predictedLabel, testLabel, confidence);
-    // cout << result_message <<GREEN<<testLabel<< RESET <<endl;
-    
-    /* predict 2
-    int predictedLabel =  model->predict(testSample);
-    string result_message = format("Predicted class = %d / Actual class = ", predictedLabel);
-    cout << result_message <<GREEN<<testLabel<< RESET <<endl;*/
-    // /* predict 3*/
     
     Ptr<StandardCollector> collector = StandardCollector::create(model->getThreshold());
     model->predict(testSample, collector);
 
 
     vector< pair<int, double> > collectorResults = collector->getResults(true);
-    cout <<"There are "<< collectorResults.size()<<" results."<<endl;
-    for (int i = 0; i < collectorResults.size(); i++){
-        if (!(i % 10))
-            cout << endl;
-        cout << MAGENTA << collectorResults[i].first << RESET << ", " << GREEN << collectorResults[i].second << RESET << "\t";
-    }
+    mostFrequent(collectorResults, testLabel);
+    // for (int i = 0; i < collectorResults.size(); i++){
+    //     if (!(i % 10))
+    //         cout << endl;
+    //     cout << MAGENTA << collectorResults[i].first << RESET << ", " << GREEN << collectorResults[i].second << RESET << "\t";
+    // }
 
     Mat eigenvalues = model->getEigenValues();
     Mat W = model->getEigenVectors();
@@ -103,23 +91,45 @@ int main(int argc, const char *argv[]) {
 }
 
 static void fisher(vector<Mat>& images, vector<int>& labels, Mat& testSample, int testLabel){
-    cout << CYAN<<"--------------------fisher-------------------"<<RESET<<endl;
+    cout << CYAN<<"\n--------------------fisher-------------------"<<RESET<<endl;
+    
     Ptr<FaceRecognizer> fmodel = FisherFaceRecognizer::create();
     fmodel->train(images, labels);
 
-    int predictedLabel = fmodel->predict(testSample);
-
-    String result_message = format("Predicted class = %d / Actual class = ", predictedLabel);
-    cout << result_message <<GREEN<<testLabel<< RESET <<endl;
-
     Ptr<StandardCollector> collector = StandardCollector::create(fmodel->getThreshold());
     fmodel->predict(testSample, collector);
-
+    
 
     vector< pair<int, double> > collectorResults = collector->getResults(true);
-     for (int i = 0; i < collectorResults.size(); i++){
-        if (!(i % 10))
-            cout << endl;
-        cout << CYAN << collectorResults[i].first << RESET << ", "  << collectorResults[i].second << RESET << "\t";
+    
+    mostFrequent(collectorResults, testLabel);
+
+    //  for (int i = 0; i < collectorResults.size(); i++){
+    //     if (!(i % 10))
+    //         cout << endl;
+    //     cout << CYAN << collectorResults[i].first << RESET << ", "  << collectorResults[i].second << RESET << "\t";
+    // }
+}
+
+static void mostFrequent( vector< pair<int, double> >& results, int label){
+    cout << "Actual class: "<< BOLDGREEN << label << RESET << endl;
+
+    map <int, int> frequent;
+    for (int i = 0; i < 50; i++){
+        if (frequent.find(results[i].first) == frequent.end())
+        {
+            frequent[results[i].first] = 1;
+        } else {
+            frequent[results[i].first]++;
+        }
+    }
+    cout << "Top "<< BOLDRED << frequent.size() << RESET << " results :"<<endl;
+    for (map<int, int>::iterator it = frequent.begin(); it != frequent.end(); it++)
+    {
+        if(it->first == label)
+            cout <<BOLDRED<< it->first <<RESET<< ":"<<it->second<<endl;
+        else 
+            cout <<CYAN<< it->first <<RESET<< ":"<<it->second<<endl;
+        //Should output 1 4 8
     }
 }

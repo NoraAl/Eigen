@@ -147,7 +147,6 @@ void Eigenframes::predict(InputArray _src, Ptr<PredictCollector> collector) cons
         int label = _labels.at<int>((int)sampleIdx);
         collector->collect(label, dist);
     }
-    std::cout <<"\ndone"<<std::endl;
 }
 
 Ptr<EigenFrameRecognizer> EigenFrameRecognizer::create(int num_components, double threshold)

@@ -364,6 +364,9 @@ int SlicImpl::saveCentroids( int label, int spCount)
       // feature scaling by dividing by the max value, the min is zero
       xfile       << (seedsX.at(i)/widthImg) << ",";
       yfile       << (seedsY.at(i)/heightImg) << ",";
+      // if (i<2){
+      //   cout << seedsX.at(i)<<", "<<seedsY.at(i)<<endl;
+      // }
       color1file  << (seedsC[0].at(i)/255) << ",";
       color2file  << (seedsC[1].at(i)/255) << ",";
       color3file  << (seedsC[2].at(i)/255) << ",";
@@ -854,15 +857,18 @@ inline void SlicImpl::GetChSeedsK()
   for (int y = 0; y < heightImg; y++)
   {
     int Y = y * regionLength + yoff;
+    
     if (Y > heightImg - 1)
       continue;
     for (int x = 0; x < widthImg; x++)
     {
       // hex grid
       int X = x * regionLength + (xoff << (r & 0x1));
+      
+
       if (X > widthImg - 1)
         continue;
-
+       // cout << "("<<X <<","<<Y<<")\t";
       switch (channels[0].depth())
       {
       case CV_8U:
@@ -912,6 +918,7 @@ inline void SlicImpl::GetChSeedsK()
     }
     r++;
   }
+  //cout <<endl;
 }
 
 struct SeedNormInvoker : ParallelLoopBody
@@ -946,6 +953,7 @@ struct SeedNormInvoker : ParallelLoopBody
       if (clustersize->at(k) == 0)
       {
         clustersize->at(k) = 1;
+        cout << "n error!";
         //exit(1);
       }
 
