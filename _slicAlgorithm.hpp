@@ -1,4 +1,8 @@
 /*********************************************************************
+ * Copyright (c) 2017 
+ * Modified by Nora Alosily
+ * Below is the original copyrights
+ * 
  * Software License Agreement (BSD License)
  *
  * Copyright (c) 2013

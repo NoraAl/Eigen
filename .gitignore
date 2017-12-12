@@ -1,6 +1,7 @@
 images/*
 results/*
 build/*
+view/*
 .DS_Store
 .vscode
 !.keep

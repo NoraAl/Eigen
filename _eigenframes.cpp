@@ -1,6 +1,4 @@
-//#include "precomp.hpp"
 #include <opencv2/face.hpp>
-//#include "face_utils.hpp"
 #include "_framerec.hpp"
 #include <set>
 #include <limits>
@@ -97,7 +95,6 @@ void Eigenframes::train(InputArrayOfArrays _src, InputArray _local_labels) {
 
     // number of samples
    int n = data.rows;
-   std::cout <<"number of rows: "<< n<<std::endl;
     // assert there are as much samples as labels
     if(static_cast<int>(labels.total()) != n) {
         String error_message = format("The number of samples (src) must equal the number of labels (labels)! len(src)=%d, len(labels)=%d.", n, labels.total());
@@ -141,7 +138,7 @@ void Eigenframes::predict(InputArray _src, Ptr<PredictCollector> collector) cons
     // project into PCA subspace
     Mat q = LDA::subspaceProject(_eigenvectors, _mean, src.reshape(1, 1));
     collector->init(_projections.size());
-   std::cout << _projections.size()<<"---"<<std::endl;
+    //std::cout << _projections.size()<<"---"<<std::endl;
     for (size_t sampleIdx = 0; sampleIdx < _projections.size(); sampleIdx++) {
         double dist = norm(_projections[sampleIdx], q, NORM_L2);
         int label = _labels.at<int>((int)sampleIdx);

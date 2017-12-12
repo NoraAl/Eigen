@@ -99,9 +99,6 @@ int main(int argc, char **argv)
             break;
         else if (c == ' ')
             display_mode = (display_mode + 1) % 3;
-
-        // if (!i)
-        // return 0;
           
     }
 

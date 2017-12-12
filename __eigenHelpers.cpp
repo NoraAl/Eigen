@@ -18,13 +18,13 @@ Mat norm_0_255(InputArray _src) {
     return dst;
 }
 
-void readCsv( vector<Mat>& images, vector<int>& labels, char separator) {
+int  readCsv( vector<Mat>& images, vector<int>& labels, char separator) {
     ifstream metafile("../data/__metadata.csv", ifstream::in);
     string value; int columns;
     if (getline(metafile, value, ',')){
         columns = atoi(value.c_str());
     }
-    cout << columns<<endl;
+    cout << columns << " superpixels is being read."<<endl;
 
     ifstream xfile("../data/_x.csv", ifstream::in);
     ifstream yfile("../data/_y.csv", ifstream::in);
@@ -33,7 +33,7 @@ void readCsv( vector<Mat>& images, vector<int>& labels, char separator) {
     ifstream c3file("../data/_color3.csv", ifstream::in);
     ifstream labelsfile("../data/_labels.csv", ifstream::in);
     
-    if (!xfile || !yfile || !c1file) {
+    if (!xfile || !yfile || !c1file || !c2file || !c3file) {
         string error_message = "No valid input file was given, please check the given filename.";
         CV_Error(Error::StsBadArg, error_message);
     }
@@ -59,16 +59,16 @@ void readCsv( vector<Mat>& images, vector<int>& labels, char separator) {
         while (getline(xstream, x, ','))
         {
             
-            if (!getline(ystream,y))
+            if (!getline(ystream,y, ','))
                 ;//error
                 
-            if (!getline(c1stream,c1))
+            if (!getline(c1stream,c1, ','))
                 ;//error
                 //cout <<"c1"<<endl;
-            if (!getline(c2stream,c2))
+            if (!getline(c2stream,c2, ','))
                 ;//error
                 //cout <<"c2"<<endl;
-            if (!getline(c3stream,c3))
+            if (!getline(c3stream,c3, ','))
                 ;//error
                 //cout <<"c3--"<<j<<endl;
             
@@ -87,7 +87,9 @@ void readCsv( vector<Mat>& images, vector<int>& labels, char separator) {
         labels.push_back(label);
     
     }
+    // close all files
     xfile.close(); yfile.close(); c1file.close(); c2file.close(); c3file.close(); labelsfile.close();
+    return images.size();
 
 }
 

@@ -951,17 +951,23 @@ struct SeedNormInvoker : ParallelLoopBody
       }
 
       if (clustersize->at(k) == 0)
-      {
-        clustersize->at(k) = 1;
+      { // this to make sure taht values are not affecting the classification 
+        //clustersize->at(k) = 1;
         cout << "n error!";
+        for (int b = 0; b < nr_channels; b++)
+        kseeds->at(b)[k] = 0;
+
+      kseedsx->at(k) = 0;
+      kseedsy->at(k) = 0;
         //exit(1);
-      }
+      } else {
 
       for (int b = 0; b < nr_channels; b++)
         kseeds->at(b)[k] = sigma->at(b)[k] / float(clustersize->at(k));
 
       kseedsx->at(k) = sigmax->at(k) / float(clustersize->at(k));
       kseedsy->at(k) = sigmay->at(k) / float(clustersize->at(k));
+      }
     } // end for k
   }
   vector<float> *sigmax;

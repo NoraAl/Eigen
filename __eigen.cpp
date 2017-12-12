@@ -4,6 +4,7 @@ static void fisher(vector<Mat>& , vector<int>& , Mat& , int );
 static void mostFrequent( vector< pair<int, double> >&, int);
 
 
+
 int main(int argc, const char *argv[]) {
     CommandLineParser parser(argc, argv, keys);
     parser.about("Application name v1.0.0");
@@ -39,19 +40,20 @@ int main(int argc, const char *argv[]) {
     vector<Mat> images;
     vector<int> labels;
 
-    readCsv( images, labels);
+    int maxSize = readCsv( images, labels);
 
     // Quit if there are not enough images for this demo.
     if(images.size() <= 1) {
         string error_message = "This demo needs at least 2 images to work. Please add more images to your data set!";
         CV_Error(Error::StsError, error_message);
     }
-    // Get the height from the first image. We'll need this
-    // later in code to reshape the images to their original
-    // size:
     int height = images[0].rows;
 
     // make the image with test no is the test sample along with the label, and remove them from both sets
+    if (testNo > maxSize){
+        string error_message = "Reaching out of range.";
+        CV_Error(Error::StsError, error_message);
+    }
     Mat testSample = images[testNo];
     int testLabel = labels[testNo];
     images.erase(images.begin()+testNo);
@@ -73,11 +75,6 @@ int main(int argc, const char *argv[]) {
 
     vector< pair<int, double> > collectorResults = collector->getResults(true);
     mostFrequent(collectorResults, testLabel);
-    // for (int i = 0; i < collectorResults.size(); i++){
-    //     if (!(i % 10))
-    //         cout << endl;
-    //     cout << MAGENTA << collectorResults[i].first << RESET << ", " << GREEN << collectorResults[i].second << RESET << "\t";
-    // }
 
     Mat eigenvalues = model->getEigenValues();
     Mat W = model->getEigenVectors();
