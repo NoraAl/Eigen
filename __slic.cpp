@@ -7,6 +7,7 @@ using namespace cv::slicNora;
 
 //vector <Info> files;
 vector <Meta> metadata;
+static void processVideo(int,int,int);
 
 
 static void readCsv(const string& filename, char separator = ',') ;
@@ -40,15 +41,12 @@ int main(int argc, char **argv)
         imagesFile = "../meta.csv";
     }
 
-    VideoCapture cap;
-    Mat input_image;
-    int label;
+    
 
     try
     {
         // array of files names
         readCsv(imagesFile);
-        return 0;
     }
     catch (cv::Exception &e)
     {
@@ -56,12 +54,51 @@ int main(int argc, char **argv)
         // nothing more we can do
         exit(1);
     }
+    for (int i = 0 ; i < metadata.size(); i++){
+        VideoCapture cap(metadata[i].filename);
+        int label = metadata[i].label;
+        int frameCount = cap.get(CV_CAP_PROP_FRAME_COUNT);
+        // cout << metadata[i].filename<<" has "<< frameCount << endl;
+        
+        if (metadata[i].range[3].exist){
+            int position = metadata[i].range[3].start;
+            cap.set(CV_CAP_PROP_POS_FRAMES,position );
+            Mat frame;
+            while (position <= metadata[i].range[3].end){
+                
+                if (!cap.read(frame)) // if not success, break loop, read() decodes and captures the next frame.
+                {
+                    cerr << "This output is tie()'d to cout\n";
+                    cout << "\n Cannot read the video file. \n";
+                    break;
+                }
+                cout << "reading: " << metadata[i].filename << "\t " << position << endl;
+                imshow("video", frame);
+                position++;
+                if (waitKey(30) == 27 ) // Wait for 'esc' key press to exit
+                {
+                    break;
+                }
+            }
+        }
+    }
+    
 
+    //processVideo();
+
+    return 0;
+}
+//////////////////////////////////////////////////////////////////////////////
+static void processVideo(int algorithmy, int iterationCount, int regionSize){
+    VideoCapture cap;
+    Mat input_image;
+    int label;
     namedWindow(window_name, 0);
     Mat result;
     int display_mode = 2;
     int superpixelCount = 0;
-    for (int i = 0 ; i < metadata.size(); i++)
+
+     for (int i = 0 ; i < metadata.size(); i++)
     {
         Mat frame;
         string resultName = "../results/image" + to_string(i)+".jpg";
@@ -73,9 +110,9 @@ int main(int argc, char **argv)
         Mat converted, blurred;
         medianBlur(frame, blurred , 5);
         Ptr<SuperpixelSlic> slic = 
-        createSuperpixelSlic(blurred, algorithmy + Slic, region_size);
+        createSuperpixelSlic(blurred, algorithmy + Slic, regionSize);
          
-        slic->iterate(num_iterations);
+        slic->iterate(iterationCount);
 
         cout << "Slic" << (algorithmy ? 'O' : ' ')
              << " "<< slic->getNumberOfSuperpixels() << " superpixels" << endl;
@@ -98,9 +135,8 @@ int main(int argc, char **argv)
             display_mode = (display_mode + 1) % 3;
           
     }
-
-    return 0;
 }
+
 
 static void readCsv(const string& filename, char separator ) {
     std::ifstream file(filename.c_str(), ifstream::in);
@@ -130,32 +166,32 @@ static void readCsv(const string& filename, char separator ) {
         getline(currentLine, rangeEnd[3]);
 
         if(!filefullname.empty() && !classlabel.empty()) {
-            element.filename = filefullname;
+            element.filename = "../video/"+filefullname+".avi";
             element.label = atoi(classlabel.c_str());
             
             element.range[0].exist = (atoi(rangeStart[0].c_str())==9999)?false:true;
             if (element.range[0].exist){
-                element.range[0].start = atoi(rangeStart[0].c_str());
-                element.range[0].end = atoi(rangeEnd[0].c_str());
+                element.range[0].start = atoi(rangeStart[0].c_str())-1;
+                element.range[0].end = atoi(rangeEnd[0].c_str())-1;
             }
 
             element.range[1].exist = (atoi(rangeStart[1].c_str())==9999)?false:true;
             if (element.range[1].exist){
-                element.range[1].start = atoi(rangeStart[1].c_str());
-                element.range[1].end = atoi(rangeEnd[1].c_str());
+                element.range[1].start = atoi(rangeStart[1].c_str())-1;
+                element.range[1].end = atoi(rangeEnd[1].c_str())-1;
             }
 
             element.range[2].exist = (atoi(rangeStart[2].c_str())==9999)?false:true;
             if (element.range[2].exist){
 
-                element.range[2].start = atoi(rangeStart[2].c_str());
-                element.range[2].end = atoi(rangeEnd[2].c_str());
+                element.range[2].start = atoi(rangeStart[2].c_str())-1;
+                element.range[2].end = atoi(rangeEnd[2].c_str())-1;
             }
 
             element.range[3].exist = (atoi(rangeStart[3].c_str())==9999)?false:true;
             if (element.range[3].exist){
-                element.range[3].start = atoi(rangeStart[3].c_str());
-                element.range[3].end = atoi(rangeEnd[3].c_str());
+                element.range[3].start = atoi(rangeStart[3].c_str())-1;
+                element.range[3].end = atoi(rangeEnd[3].c_str())-1;
             }
 
             metadata.push_back(element);
