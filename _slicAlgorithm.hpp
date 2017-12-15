@@ -55,11 +55,36 @@
 #define Slic_HPP__
 #ifdef __cplusplus
 
+
+
 #include <opencv2/core.hpp>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <iostream>
+#include <opencv2/opencv.hpp>
 #include "__colors.hpp"
+
+using namespace std;
+struct FrameRange{
+    bool exist;
+    int start;
+    int end;
+};
+
+struct Meta{
+    int label;
+    string filename;
+    FrameRange range[4];
+};
+
+struct Info{
+    string filename;
+    int label;
+}; 
+
 
 namespace cv
 {
