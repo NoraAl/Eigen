@@ -73,9 +73,10 @@ struct FrameRange{
     int start;
     int end;
 };
-
+//enum Scene{outdoors, outdoorsMovingCamer, outdoorsWithClothes,indoors};
 struct Meta{
     int label;
+    //Scene scene;
     string filename;
     FrameRange range[4];
 };
@@ -146,6 +147,7 @@ public:
     CV_WRAP virtual void getLabels( OutputArray labels_out ) const = 0;
     CV_WRAP virtual void getUniforms( OutputArray uniforms ) const = 0;
     CV_WRAP virtual int saveCentroids( int label, int)  = 0;
+    CV_WRAP virtual vector<float> frameCentroids(int &) const = 0;
     CV_WRAP virtual void Metadata(int&)  = 0;
 
     /** @brief Returns the mask of the superpixel segmentation stored in SuperpixelSlic object.

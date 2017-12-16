@@ -24,6 +24,7 @@ public:
   virtual void getLabels(OutputArray labels_out) const;
   virtual void getUniforms(OutputArray uniforms) const;
   virtual int saveCentroids(int label, int ) ;
+  virtual vector<float> frameCentroids(int&)const;
   virtual void Metadata(int&) ;
 
   // get mask image with contour
@@ -387,6 +388,33 @@ int SlicImpl::saveCentroids( int label, int spCount)
   }
   
   return spCount;
+  
+}
+
+vector<float>  SlicImpl::frameCentroids(int& count) const 
+{
+
+  vector<float> singleFrame;
+  count = seedsX.size();
+
+  for (int i = 0; i < seedsC[0].size(); i++)
+    {
+      // just return the values
+      // singleFrame.push_back(seedsX.at(i));
+      // singleFrame.push_back(seedsY.at(i));
+      // singleFrame.push_back(seedsC[0].at(i));
+      // singleFrame.push_back(seedsC[1].at(i));
+      // singleFrame.push_back(seedsC[2].at(i));
+
+      // with standarization 
+      singleFrame.push_back(seedsX.at(i));
+      singleFrame.push_back(seedsY.at(i));
+      singleFrame.push_back(seedsC[0].at(i));
+      singleFrame.push_back(seedsC[1].at(i));
+      singleFrame.push_back(seedsC[2].at(i));
+    }
+
+  return singleFrame;
   
 }
 

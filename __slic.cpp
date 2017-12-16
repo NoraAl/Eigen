@@ -8,7 +8,9 @@ using namespace cv::slicNora;
 //vector <Info> files;
 vector <Meta> metadata;
 static void processVideo(int,int,int);
-
+static int  superpixelFrame(Mat, vector<vector<float> >&, int , int, int);
+static void saveSegmentaion( string filename, float average[], int label, int, int); 
+static int superpCount = 0;
 
 static void readCsv(const string& filename, char separator = ',') ;
 static const char *window_name = "Slic Superpixels";
@@ -32,10 +34,10 @@ int main(int argc, char **argv)
     string imagesFile = cmd.get<String>("file");
     
     int algorithmy = cmd.get<int>("algorithm");
-    int region_size = 5;
+    int regionSize = 10;
     //int ruler = 5;
-    int min_element_size = 5;
-    int num_iterations = 3;
+    int min_element_size = 0;
+    int iterationCount = 3;
     bool nofileSpecified = imagesFile.empty();
     if (nofileSpecified){
         imagesFile = "../meta.csv";
@@ -54,34 +56,111 @@ int main(int argc, char **argv)
         // nothing more we can do
         exit(1);
     }
-    for (int i = 0 ; i < metadata.size(); i++){
+    int total = 0;
+    for (int i = 0 ; (i < metadata.size()) && i<3; i++){
         VideoCapture cap(metadata[i].filename);
         int label = metadata[i].label;
         int frameCount = cap.get(CV_CAP_PROP_FRAME_COUNT);
         // cout << metadata[i].filename<<" has "<< frameCount << endl;
+        total += frameCount;
         
         if (metadata[i].range[3].exist){
+            vector <vector<float> > frames, differences;
+
             int position = metadata[i].range[3].start;
             cap.set(CV_CAP_PROP_POS_FRAMES,position );
             Mat frame;
+            int count = 0;
+
+            // go over the range of frames and get the average superpixeled scene
             while (position <= metadata[i].range[3].end){
                 
                 if (!cap.read(frame)) // if not success, break loop, read() decodes and captures the next frame.
                 {
-                    cerr << "This output is tie()'d to cout\n";
                     cout << "\n Cannot read the video file. \n";
                     break;
+                } 
+                
+                count++;
+                //cout << "reading: " << metadata[i].filename << "\t "<<metadata[i].label<<"\t" << position << endl;
+                int currentspCount = superpixelFrame(frame, frames, algorithmy, iterationCount, regionSize);
+                
+                // check if all frame has the same number of superpixels.
+                if ((currentspCount != superpCount)&& superpCount){
+                    cout << "error, number of superpixels is irregular."<<endl;
+                    exit(1);
                 }
-                cout << "reading: " << metadata[i].filename << "\t " << position << endl;
-                imshow("video", frame);
+                superpCount = currentspCount;
+                //imshow("video", frame);
                 position++;
-                if (waitKey(30) == 27 ) // Wait for 'esc' key press to exit
-                {
-                    break;
+                // if (waitKey(30) == 27 ) // Wait for 'esc' key press to exit
+                // {
+                //     break;
+                // }
+            }
+
+            if (count){//some scene, save it
+            // average vector
+            cout <<"averaging .. "<<superpCount<<" "<<frames.size()<<" "<<frames[i].size()<<endl;
+            int vectorLength = frames[0].size();
+            int numOfFrames = frames.size();
+            
+            // it is not a single superpixel vector, but all
+            float average[vectorLength], diffAverage[vectorLength];
+            // reset cells
+            for (int i = 0; i < vectorLength; i++){
+                average[i] = 0;
+                diffAverage[i] = 0;
+            }
+
+
+            //average it
+            for (int i = 0; i < frames.size(); i++){
+                vector <float> diffVector;
+                for (int j=0; j< frames[i].size(); j++){
+                    average[j] = average[j] + frames.at(i).at(j);
+                    if (i){
+                        float diff = frames.at(i).at(j)- frames.at(i-1).at(j);
+                        diffVector.push_back(diff);
+                        //cout << diff<<",";
+                        diffAverage[j] = diffAverage[j] + diff;
+                    }
+                    
+                    
                 }
+                //cout <<endl<<endl;
+                differences.push_back(diffVector);
+            }
+
+            //calculate difference WROG!!!!!!!!!!!!!!!!!!!!
+            // for (int i = 1; i < vectorLength; i++)
+            //     difference[i] = average[i] - average[i-1];
+
+            //standardize the average vector (To do: calc how to standardize difference vector)
+            for (int i = 0; i < vectorLength ; i++){
+                average[i]= average[i]/numOfFrames;
+                if (i< (vectorLength-1))
+                    diffAverage[i] = diffAverage[i]/(numOfFrames-1);
+
+
+                // if ((i%5)==0)
+                //     average[i] = average[i] /  frame.cols;//x
+                // else if ((i%1)==0)
+                //     average[i] = average[i] /  frame.rows;//y
+                // else
+                //     average[i] = average[i] /  256;//colors
+            }
+            // save label
+            // save averaged vector, if i is zero create files
+            saveSegmentaion("centsAverage",average, label, vectorLength, i);
+            saveSegmentaion("diffAverage",diffAverage, label, vectorLength, i);
+
             }
         }
+
+        
     }
+    cout << "There are " << total <<"frames"<<endl;
     
 
     //processVideo();
@@ -89,53 +168,37 @@ int main(int argc, char **argv)
     return 0;
 }
 //////////////////////////////////////////////////////////////////////////////
-static void processVideo(int algorithmy, int iterationCount, int regionSize){
-    VideoCapture cap;
-    Mat input_image;
-    int label;
+static int  superpixelFrame(Mat frame, vector<vector<float> >& frames, int algorithmy, int iterationCount, int regionSize){
     namedWindow(window_name, 0);
     Mat result;
     int display_mode = 2;
     int superpixelCount = 0;
 
-     for (int i = 0 ; i < metadata.size(); i++)
-    {
-        Mat frame;
-        string resultName = "../results/image" + to_string(i)+".jpg";
-
-        label = metadata[i].label;
-        input_image = imread(metadata[i].filename);
-        input_image.copyTo(frame);
-        
-        Mat converted, blurred;
-        medianBlur(frame, blurred , 5);
-        Ptr<SuperpixelSlic> slic = 
+    Mat converted, blurred;
+    medianBlur(frame, blurred, 5);
+    Ptr<SuperpixelSlic> slic =
         createSuperpixelSlic(blurred, algorithmy + Slic, regionSize);
-         
-        slic->iterate(iterationCount);
 
-        cout << "Slic" << (algorithmy ? 'O' : ' ')
-             << " "<< slic->getNumberOfSuperpixels() << " superpixels" << endl;
+    slic->iterate(iterationCount);
 
-        Mat labels, uniforms;
+    //cout << "Slic" << (algorithmy ? 'O' : ' ')
+         //<< " " << slic->getNumberOfSuperpixels() << " superpixels" << endl;
 
-        slic->getUniforms(uniforms);
-        slic->getLabels(labels);
-        superpixelCount = slic->saveCentroids(label, superpixelCount);
+    Mat labels, uniforms;
+    int count  =0 ;
+    slic->getUniforms(uniforms);
+    frames.push_back(slic->frameCentroids(count));
+    // slic->getLabels(labels);
+    //superpixelCount = slic->saveCentroids(label, superpixelCount);
 
-        imshow("uniform", uniforms);
-        imwrite(resultName, uniforms );
-        //imshow("blurred", blurred);
+    imshow("uniform", uniforms);
+    //imwrite(resultName, uniforms );
+    //imshow("blurred", blurred);
 
-        int c = waitKey(1) & 0xff;
-        
-        if (c == 'q' || c == 'Q' || c == 27 )
-            break;
-        else if (c == ' ')
-            display_mode = (display_mode + 1) % 3;
-          
-    }
+    int c = waitKey(1) & 0xff;
+    return count ;
 }
+
 
 
 static void readCsv(const string& filename, char separator ) {
@@ -206,5 +269,44 @@ static void readCsv(const string& filename, char separator ) {
         <<"\t\t"<<metadata[i].range[3].start<<"->"<<metadata[i].range[3].end
         <<"\t\t"<<metadata[i].filename<<endl;
     }
+}
+
+
+static void saveSegmentaion( string filename, float average[], int label, int vectorLength, int filesExist){
+    ofstream centroidsfile;
+    string prefix = "../data/"+filename;
+    cout << RED<<filesExist<<RESET<<endl;
+    if (!filesExist){
+        
+        ofstream labelsfile(prefix+"labels.csv", ofstream::out );
+        labelsfile << label << "," << endl;
+        labelsfile.close();
+
+        ofstream metafile(prefix+"meta.csv", ofstream::out );
+        metafile << vectorLength << "," << endl;
+        metafile.close();
+
+        centroidsfile.open(prefix+".csv", ofstream::out);
+    } else {
+
+        ofstream labelsfile(prefix+"labels.csv", ofstream::out | ofstream::app);
+        labelsfile << label << "," << endl;
+        labelsfile.close();
+
+        ofstream metafile(prefix+"meta.csv", ofstream::out | ofstream::app);
+        metafile << vectorLength << "," << endl;
+        metafile.close();
+
+        centroidsfile.open(prefix+".csv", ofstream::out | ofstream::app);
+
+    }
+
+    for (int i = 0; i < vectorLength; i++)
+    {
+        // feature scaling by dividing by the max value, the min is zero
+        centroidsfile << average[i] << ",";
+    }
+    centroidsfile << endl;
+    centroidsfile.close();
 }
 
