@@ -145,12 +145,18 @@ int main(int argc, char **argv)
                 average[i]= average[i]/numOfFrames;
                 diffAverage[i] = diffAverage[i]/(numOfFrames-1);
 
-                // if ((i%5)==0)
-                //     average[i] = average[i] /  frame.cols;//x
-                // else if (((i%2)==0)||((i%3)==0)||((i%4)==0))
-                //     average[i] = average[i] /  256;//colors
-                // else
-                //     average[i] = average[i] /  frame.rows;//y
+                if ((i%5)==0){
+                    average[i] = (average[i]*100) /  frame.rows;
+                    diffAverage[i] = (diffAverage[i]*1000) / frame.rows;
+                }
+                else if ((i%5)==1){
+                    average[i] = (average[i]*100) /  frame.cols;
+                    diffAverage[i] = (diffAverage[i]*1000) / frame.cols;
+                }
+                else{ 
+                    average[i] = (average[i]*100) /  256;//colors
+                    diffAverage[i] = (diffAverage[i]*1000) / 256;
+                }
                     
             }
             // save label

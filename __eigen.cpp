@@ -139,10 +139,11 @@ static void diffModel(vector<Mat>& images, vector<int>& labels, Mat& testSample,
 }
 
 static void mostFrequent( vector< pair<int, double> >& results, int label){
-    cout << "Actual class: "<< BOLDGREEN << label << RESET << endl;
+    cout << "Actual class: "<< BOLDGREEN << label << RESET<<" and results total size is :"<<BOLDBLUE
+    <<results.size()<<RESET << endl;
 
     map <int, int> frequent;
-    for (int i = 0; i < 50; i++){
+    for (int i = 0; i < results.size(); i++){
         if (frequent.find(results[i].first) == frequent.end())
         {
             frequent[results[i].first] = 1;
@@ -150,13 +151,14 @@ static void mostFrequent( vector< pair<int, double> >& results, int label){
             frequent[results[i].first]++;
         }
     }
-    cout << "Top "<< BOLDRED << frequent.size() << RESET << " results :"<<endl;
+    cout << BOLDBLACK << "Top " << frequent.size()  << " results :"<< RESET<<endl;
+    cout <<BOLDRED<< "Class" << ":\t"<<"Recall"<<RESET<<endl;
     for (map<int, int>::iterator it = frequent.begin(); it != frequent.end(); it++)
     {
         if(it->first == label)
-            cout <<BOLDRED<< it->first <<RESET<< ":"<<it->second<<endl;
+            cout <<BOLDRED<< it->first << ":\t"<<it->second<<RESET<<endl;
         else 
-            cout <<CYAN<< it->first <<RESET<< ":"<<it->second<<endl;
+            cout <<CYAN<< it->first << ":\t"<<it->second<<RESET<<endl;
         //Should output 1 4 8
     }
 }
