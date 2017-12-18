@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     }
     int total = 0; 
     string scene("_d1");
-    for (int i = 0 ; i < metadata.size(); i= i + 7){
+    for (int i = 0 ; i < metadata.size(); i= i +3){
         VideoCapture cap(metadata[i].filename);
         cout << metadata[i].filename<<endl;
         if (metadata[i].filename.find(scene) == string::npos)
@@ -155,8 +155,8 @@ int main(int argc, char **argv)
             }
             // save label
             // save averaged vector, if i is zero create files
-            saveSegmentaion("centsAverage",average, label, vectorLength, i);
-            saveSegmentaion("diffAverage",diffAverage, label, vectorLength, i);
+            saveSegmentaion("cents",average, label, vectorLength, i);
+            saveSegmentaion("diff",diffAverage, label, vectorLength, i);
 
             }
         }

@@ -93,54 +93,59 @@ int  readCsv( vector<Mat>& images, vector<int>& labels, char separator) {
 
 }
 
-int  readTrainedCsv( vector<Mat>& images, vector<int>& labels, char separator) {
+int  readTrainedCsv( vector<Mat>& images, vector<Mat>& diffImages, vector<int>& labels, char separator) {
     cout << "Reading training images.."<<endl;
-    ifstream metafile("../data/centsAveragemeta.csv", ifstream::in);
+    ifstream metafile("../data/centsmeta.csv", ifstream::in);
     string value; int columns;
     if (getline(metafile, value, ',')){
         columns = atoi(value.c_str());
     }
     metafile.close();
 
-    ifstream centroidsfile("../data/centsAverage.csv", ifstream::in);
-    ifstream labelsfile("../data/centsAveragelabels.csv", ifstream::in);
+    ifstream centroidsfile("../data/cents.csv", ifstream::in);
+    ifstream labelsfile("../data/centslabels.csv", ifstream::in);
 
-    ifstream diffsfile("../data/diffAverage.csv", ifstream::in);
+    ifstream diffsfile("../data/diff.csv", ifstream::in);
     
     if (!centroidsfile || !labelsfile || !diffsfile ) {
         string error_message = "No valid input file was given, please check the given filename.";
         CV_Error(Error::StsBadArg, error_message);
     }
 
-    string line;
+    string line, diffline;
     
-    while (getline(centroidsfile, line) )
+    while (getline(centroidsfile, line) && getline(diffsfile, diffline) )
     {
         // Now inside each line we need to seperate the cols
 
-        Mat image (1,columns, CV_32F);//**
+        Mat image (1,columns, CV_32F), diffImage(1,columns, CV_32F);//**
         int label;
-        int j = 0;
 
-        stringstream stream(line);
-
-        string point, l;
-        getline(labelsfile, l);
+        stringstream stream(line), diffStream(diffline);
+        string point, diffpoint, l;
         
-            
+        // read labels
+        getline(labelsfile, l);   
         label = atoi(l.c_str());
+
         int i = 0;
        
-        while (getline(stream, point, ','))
+        while (getline(stream, point, ',') && getline(diffStream, diffpoint, ','))
         {
             float p = atof(point.c_str());
+            float diffp = atof(diffpoint.c_str());
+            
             image.at<float>(0,i) = p;
+            diffImage.at<float>(0,i) = diffp;
+
             i++;
 
         }
         
+        
         // add the row to the complete data vector
         images.push_back(image);
+        diffImages.push_back(diffImage);
         labels.push_back(label);
     
     }

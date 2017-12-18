@@ -28,6 +28,6 @@ const String keys =
 
 Mat norm_0_255(InputArray _src);
 int  readCsv( vector<Mat>& images, vector<int>& labels, char separator = ',');
-int  readTrainedCsv( vector<Mat>& images, vector<int>& labels, char separator = ',');
+int  readTrainedCsv( vector<Mat>& images,vector<Mat>& diffImages, vector<int>& labels, char separator = ',');
 
 #endif

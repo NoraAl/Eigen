@@ -37,10 +37,12 @@ int main(int argc, const char *argv[]) {
     }
     
     // These vectors hold the images and corresponding labels.
-    vector<Mat> images;
+    vector<Mat> images, diffImages;
     vector<int> labels;
 
-    int maxSize = readTrainedCsv( images, labels);
+    int maxSize = readTrainedCsv( images, diffImages, labels);
+
+    return 0;
     // Quit if there are not enough images for this demo.
     if(images.size() <= 1) {
         string error_message = "This demo needs at least 2 images to work. Please add more images to your data set!";
