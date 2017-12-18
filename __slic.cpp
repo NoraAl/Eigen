@@ -34,13 +34,13 @@ int main(int argc, char **argv)
     string imagesFile = cmd.get<String>("file");
     
     int algorithmy = cmd.get<int>("algorithm");
-    int regionSize = 10;
+    int regionSize = 8;
     //int ruler = 5;
     int min_element_size = 0;
     int iterationCount = 3;
     bool nofileSpecified = imagesFile.empty();
     if (nofileSpecified){
-        imagesFile = "../meta.csv";
+        imagesFile = "../trainMeta.csv";
     }
 
     
@@ -56,16 +56,20 @@ int main(int argc, char **argv)
         // nothing more we can do
         exit(1);
     }
-    int total = 0;
-    for (int i = 0 ; (i < metadata.size()) && i<3; i++){
+    int total = 0; 
+    string scene("_d1");
+    for (int i = 0 ; i < metadata.size(); i= i + 7){
         VideoCapture cap(metadata[i].filename);
+        cout << metadata[i].filename<<endl;
+        if (metadata[i].filename.find(scene) == string::npos)
+            continue;
         int label = metadata[i].label;
         int frameCount = cap.get(CV_CAP_PROP_FRAME_COUNT);
         // cout << metadata[i].filename<<" has "<< frameCount << endl;
         total += frameCount;
         
         if (metadata[i].range[3].exist){
-            vector <vector<float> > frames, differences;
+            vector <vector<float> > frames;
 
             int position = metadata[i].range[3].start;
             cap.set(CV_CAP_PROP_POS_FRAMES,position );
@@ -101,7 +105,7 @@ int main(int argc, char **argv)
 
             if (count){//some scene, save it
             // average vector
-            cout <<"averaging .. "<<superpCount<<" "<<frames.size()<<" "<<frames[i].size()<<endl;
+            cout <<"averaging .. "<<superpCount<<" "<<frames.size()<<" "<<frames[0].size()<<endl;
             int vectorLength = frames[0].size();
             int numOfFrames = frames.size();
             
@@ -121,7 +125,7 @@ int main(int argc, char **argv)
                     average[j] = average[j] + frames.at(i).at(j);
                     if (i){
                         float diff = frames.at(i).at(j)- frames.at(i-1).at(j);
-                        diffVector.push_back(diff);
+                        //diffVector.push_back(diff);
                         //cout << diff<<",";
                         diffAverage[j] = diffAverage[j] + diff;
                     }
@@ -129,7 +133,7 @@ int main(int argc, char **argv)
                     
                 }
                 //cout <<endl<<endl;
-                differences.push_back(diffVector);
+                //differences.push_back(diffVector);
             }
 
             //calculate difference WROG!!!!!!!!!!!!!!!!!!!!
@@ -139,16 +143,15 @@ int main(int argc, char **argv)
             //standardize the average vector (To do: calc how to standardize difference vector)
             for (int i = 0; i < vectorLength ; i++){
                 average[i]= average[i]/numOfFrames;
-                if (i< (vectorLength-1))
-                    diffAverage[i] = diffAverage[i]/(numOfFrames-1);
-
+                diffAverage[i] = diffAverage[i]/(numOfFrames-1);
 
                 // if ((i%5)==0)
                 //     average[i] = average[i] /  frame.cols;//x
-                // else if ((i%1)==0)
-                //     average[i] = average[i] /  frame.rows;//y
-                // else
+                // else if (((i%2)==0)||((i%3)==0)||((i%4)==0))
                 //     average[i] = average[i] /  256;//colors
+                // else
+                //     average[i] = average[i] /  frame.rows;//y
+                    
             }
             // save label
             // save averaged vector, if i is zero create files

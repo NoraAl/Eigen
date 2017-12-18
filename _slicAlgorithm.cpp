@@ -396,8 +396,8 @@ vector<float>  SlicImpl::frameCentroids(int& count) const
 
   vector<float> singleFrame;
   count = seedsX.size();
-
-  for (int i = 0; i < seedsC[0].size(); i++)
+  int max = -1;
+  for (int i = 0; i < count; i++)
     {
       // just return the values
       // singleFrame.push_back(seedsX.at(i));
@@ -410,10 +410,12 @@ vector<float>  SlicImpl::frameCentroids(int& count) const
       singleFrame.push_back(seedsX.at(i));
       singleFrame.push_back(seedsY.at(i));
       singleFrame.push_back(seedsC[0].at(i));
+      // if (seedsC[0].at(i) > max)
+      //   max = seedsC[0].at(i);
       singleFrame.push_back(seedsC[1].at(i));
       singleFrame.push_back(seedsC[2].at(i));
     }
-
+  // cout << "max is: " <<max<<endl;
   return singleFrame;
   
 }
@@ -981,7 +983,7 @@ struct SeedNormInvoker : ParallelLoopBody
       if (clustersize->at(k) == 0)
       { // this to make sure taht values are not affecting the classification 
         //clustersize->at(k) = 1;
-        cout << "n error!";
+        cout << "Empty cluster\n";
         for (int b = 0; b < nr_channels; b++)
         kseeds->at(b)[k] = 0;
 
