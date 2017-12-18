@@ -410,12 +410,9 @@ vector<float>  SlicImpl::frameCentroids(int& count) const
       singleFrame.push_back(seedsX.at(i));
       singleFrame.push_back(seedsY.at(i));
       singleFrame.push_back(seedsC[0].at(i));
-      // if (seedsC[0].at(i) > max)
-      //   max = seedsC[0].at(i);
       singleFrame.push_back(seedsC[1].at(i));
       singleFrame.push_back(seedsC[2].at(i));
     }
-  // cout << "max is: " <<max<<endl;
   return singleFrame;
   
 }

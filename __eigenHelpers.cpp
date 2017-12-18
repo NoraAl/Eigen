@@ -93,3 +93,73 @@ int  readCsv( vector<Mat>& images, vector<int>& labels, char separator) {
 
 }
 
+int  readTrainedCsv( vector<Mat>& images, vector<int>& labels, char separator) {
+    ifstream metafile("../data/centsAveragemeta.csv", ifstream::in);
+    string value; int columns;
+    if (getline(metafile, value, ',')){
+        columns = atoi(value.c_str());
+    }
+    metafile.close();
+    int num = 0;
+    
+    cout << columns << " superpixels is being read."<<endl;
+
+    ifstream centroidsfile("../data/centsAverage.csv", ifstream::in);
+    ifstream labelsfile("../data/centsAveragelabels.csv", ifstream::in);
+
+    ifstream diffsfile("../data/diffAverage.csv", ifstream::in);
+    
+    if (!centroidsfile || !labelsfile || !diffsfile ) {
+        string error_message = "No valid input file was given, please check the given filename.";
+        CV_Error(Error::StsBadArg, error_message);
+    }
+
+    string line;
+    
+    while (getline(centroidsfile, line) )
+    {
+        // Now inside each line we need to seperate the cols
+
+        Mat image (1,columns, CV_32F);//**
+        int label;
+        int j = 0;
+
+        stringstream stream(line);
+
+        string point, l;
+        getline(labelsfile, l);
+        
+            
+        label = atoi(l.c_str());
+        int i = 0;
+       
+        while (getline(stream, point, ','))
+        {
+            float p = atof(point.c_str());
+            image.at<float>(0,i) = p;
+            i++;
+
+        }
+        //cout <<endl;
+        
+        cout << image.rows<<"--"<<image.cols<<endl;
+        // add the row to the complete data vector
+        if (num < 3)
+            for  (int i=0;i<image.rows;i++){
+                for (int j= 0; j< image.cols; j++){
+                    cout << image.at<float>(i,j)<<",";
+                }
+                
+            }
+        cout << endl;
+        num++;
+        images.push_back(image);
+        labels.push_back(label);
+    
+    }
+    // close all files
+    centroidsfile.close();
+    return images.size();
+
+}
+
