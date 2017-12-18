@@ -94,15 +94,13 @@ int  readCsv( vector<Mat>& images, vector<int>& labels, char separator) {
 }
 
 int  readTrainedCsv( vector<Mat>& images, vector<int>& labels, char separator) {
+    cout << "Reading training images.."<<endl;
     ifstream metafile("../data/centsAveragemeta.csv", ifstream::in);
     string value; int columns;
     if (getline(metafile, value, ',')){
         columns = atoi(value.c_str());
     }
     metafile.close();
-    int num = 0;
-    
-    cout << columns << " superpixels is being read."<<endl;
 
     ifstream centroidsfile("../data/centsAverage.csv", ifstream::in);
     ifstream labelsfile("../data/centsAveragelabels.csv", ifstream::in);
@@ -140,25 +138,15 @@ int  readTrainedCsv( vector<Mat>& images, vector<int>& labels, char separator) {
             i++;
 
         }
-        //cout <<endl;
         
-        cout << image.rows<<"--"<<image.cols<<endl;
         // add the row to the complete data vector
-        if (num < 3)
-            for  (int i=0;i<image.rows;i++){
-                for (int j= 0; j< image.cols; j++){
-                    cout << image.at<float>(i,j)<<",";
-                }
-                
-            }
-        cout << endl;
-        num++;
         images.push_back(image);
         labels.push_back(label);
     
     }
     // close all files
     centroidsfile.close();
+    cout << "Training images are read."<<endl;
     return images.size();
 
 }

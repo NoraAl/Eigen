@@ -41,7 +41,6 @@ int main(int argc, const char *argv[]) {
     vector<int> labels;
 
     int maxSize = readTrainedCsv( images, labels);
-    return 0;
     // Quit if there are not enough images for this demo.
     if(images.size() <= 1) {
         string error_message = "This demo needs at least 2 images to work. Please add more images to your data set!";
@@ -51,7 +50,7 @@ int main(int argc, const char *argv[]) {
 
     // make the image with test no is the test sample along with the label, and remove them from both sets
     if (testNo > maxSize){
-        string error_message = "Reaching out of range.";
+        string error_message = "\nPlease choose test image that is within range, reaching out of range.";
         CV_Error(Error::StsError, error_message);
     }
     Mat testSample = images[testNo];

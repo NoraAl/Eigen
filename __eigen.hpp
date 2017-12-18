@@ -20,7 +20,7 @@ const String keys =
         "{load              |   | use the existing model in the data directory       }"
         "{loadFile          |   | use a given existing model}"
         "{train             |   | save training results into a file\n\t\t\033[1m\033[30mEx:\033[0m ./eigen -train=../data   }"
-        "{test              |22 | id of the image to be tested\n\t\t\033[1m\033[30mEx:\033[0m ./eigen -test=44     }"
+        "{test              |4 | id of the image to be tested\n\t\t\033[1m\033[30mEx:\033[0m ./eigen -test=44     }"
         "{output            |   | output folder for the results       }"
         
         ;
