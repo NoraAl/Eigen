@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     }
     int total = 0; 
     string scene("_d1");
-    for (int i = 0 ; i < metadata.size(); i= i +3){
+    for (int i = 0 ; i < metadata.size(); i++){
         VideoCapture cap(metadata[i].filename);
         cout << metadata[i].filename<<endl;
         if (metadata[i].filename.find(scene) == string::npos)

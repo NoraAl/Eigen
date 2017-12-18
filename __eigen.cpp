@@ -1,6 +1,7 @@
 #include "__eigen.hpp"
 
 static void fisher(vector<Mat>& , vector<int>& , Mat& , int );
+static void diffModel(vector<Mat>& , vector<int>& , Mat& , int );
 static void mostFrequent( vector< pair<int, double> >&, int);
 
 
@@ -42,7 +43,6 @@ int main(int argc, const char *argv[]) {
 
     int maxSize = readTrainedCsv( images, diffImages, labels);
 
-    return 0;
     // Quit if there are not enough images for this demo.
     if(images.size() <= 1) {
         string error_message = "This demo needs at least 2 images to work. Please add more images to your data set!";
@@ -56,20 +56,27 @@ int main(int argc, const char *argv[]) {
         CV_Error(Error::StsError, error_message);
     }
     Mat testSample = images[testNo];
+    Mat difftestSample = diffImages[testNo];
     int testLabel = labels[testNo];
+    
     images.erase(images.begin()+testNo);
+    diffImages.erase(diffImages.begin()+testNo);
     labels.erase(labels.begin()+testNo);
 
-    
+    cout << "There are "<< BOLDCYAN << diffImages.size()<<RESET<<" training images."<<endl;
+
+    cout << "64"<<endl;
     Ptr<BasicFaceRecognizer> model = EigenFrameRecognizer::create(20);
     if (train){
+        cout << "67"<<endl;
         model->train(images, labels);
+        cout << "68"<<endl;
         model->write(modelFileName);
     } else {
         cout << "Reading the model from file .."<<endl;
         model->read(modelFileName);
     }
-    
+    cout << "73"<<endl;
     Ptr<StandardCollector> collector = StandardCollector::create(model->getThreshold());
     model->predict(testSample, collector);
 
@@ -80,9 +87,10 @@ int main(int argc, const char *argv[]) {
     Mat eigenvalues = model->getEigenValues();
     Mat W = model->getEigenVectors();
     Mat mean = model->getMean();
-
+    
     /* fisher faces */
-    fisher(images,labels,testSample,testLabel);
+    diffModel(diffImages,labels,difftestSample,testLabel);
+    //fisher(images,labels,testSample,testLabel);
 
     cout <<endl;
     return 0;
@@ -92,6 +100,27 @@ static void fisher(vector<Mat>& images, vector<int>& labels, Mat& testSample, in
     cout << CYAN<<"\n--------------------fisher-------------------"<<RESET<<endl;
     
     Ptr<FaceRecognizer> fmodel = FisherFaceRecognizer::create();
+    fmodel->train(images, labels);
+
+    Ptr<StandardCollector> collector = StandardCollector::create(fmodel->getThreshold());
+    fmodel->predict(testSample, collector);
+    
+
+    vector< pair<int, double> > collectorResults = collector->getResults(true);
+    
+    mostFrequent(collectorResults, testLabel);
+
+    //  for (int i = 0; i < collectorResults.size(); i++){
+    //     if (!(i % 10))
+    //         cout << endl;
+    //     cout << CYAN << collectorResults[i].first << RESET << ", "  << collectorResults[i].second << RESET << "\t";
+    // }
+}
+
+static void diffModel(vector<Mat>& images, vector<int>& labels, Mat& testSample, int testLabel){
+    cout << MAGENTA<<"\n--------------------Diff-------------------"<<RESET<<endl;
+    
+    Ptr<FaceRecognizer> fmodel = EigenFrameRecognizer::create();
     fmodel->train(images, labels);
 
     Ptr<StandardCollector> collector = StandardCollector::create(fmodel->getThreshold());
