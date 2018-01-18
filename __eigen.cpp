@@ -143,12 +143,15 @@ static void mostFrequent( vector< pair<int, double> >& results, int label){
     <<results.size()<<RESET << endl;
 
     map <int, int> frequent;
+    map <int, int> frequentCount;
     for (int i = 0; i < results.size(); i++){
         if (frequent.find(results[i].first) == frequent.end())
         {
-            frequent[results[i].first] = 1;
+            frequent[results[i].first] = results[i].second;
+            frequentCount[results[i].first] = 1;
         } else {
-            frequent[results[i].first]++;
+            frequent[results[i].first] = frequent[results[i].first] + results[i].second;
+            frequentCount[results[i].first]++;
         }
     }
     cout << BOLDBLACK << "Top " << frequent.size()  << " results :"<< RESET<<endl;
